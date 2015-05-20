@@ -77,7 +77,6 @@ static int shall_exit = 0;
 
 static inline void print_dot(void)
 {
-	stats_display();
 	printf(".");
 	fflush(stdout);
 }
