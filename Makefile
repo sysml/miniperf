@@ -15,6 +15,7 @@ CFLAGS          += -isystem $(realpath .)
 CFLAGS          += -isystem $(MINICACHE_ROOT)
 CFLAGS          += -isystem $(MINICACHE_ROOT)/target/minios/include
 
+CFLAGS	       			+= -DLWIP_WND_SCALE=1
 CFLAGS	       			+= -DLWIP_STATS_DISPLAY=1
 #CFLAGS				+= -DLWIP_IF_DEBUG
 #CFLAGS				+= -DLWIP_TCP_DEBUG
@@ -45,6 +46,8 @@ CONFIG_LWIP_CHECKSUM_NOCHECK	= y
 ## netif: NM_WRAP
 ######################################
 CONFIG_NETFRONT			= y
+CONFIG_NETFRONT_GSO		= y
+CONFIG_NETFRONT_PERSISTENT_GRANTS = y
 #CONFIG_NETFRONT_NETMAP2		= n
 #CONFIG_NMWRAP			= y
 #CONFIG_NMWRAP_SYNCRX		= n
