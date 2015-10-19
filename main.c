@@ -65,11 +65,11 @@
 struct _args {
     int             dhclient;
     struct eth_addr mac;
-    struct ip_addr  ip;
-    struct ip_addr  mask;
-    struct ip_addr  gw;
-    struct ip_addr  dns0;
-    struct ip_addr  dns1;
+    ip_addr_t  ip;
+    ip_addr_t  mask;
+    ip_addr_t  gw;
+    ip_addr_t  dns0;
+    ip_addr_t  dns1;
 } args;
 
 static int shall_exit = 0;
