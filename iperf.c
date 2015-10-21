@@ -1,3 +1,12 @@
+/**
+ *
+ * Code based partly on: https://github.com/lsgunth/lwip_contrib.git
+ * and
+ * http://docs.lpcware.com/lpcopen/v1.03/lpc17xx__40xx_2examples_2misc_2iperf__server_2iperf__server_8c_source.html
+ *
+ * TODO: include external code license
+ *
+ * */
 #include <mini-os/os.h>
 #include <mini-os/types.h>
 #include <mini-os/xmalloc.h>
@@ -280,7 +289,7 @@ static void parse_header(struct iperfsrv_sess *is, struct tcp_pcb *tpcb, void *d
 }
 
 /*----------------------------------------------------------------------------
- * The following code is ported from:
+ * Part of the following code is derived from:
  *  http://docs.lpcware.com/lpcopen/v1.03/lpc17xx__40xx_2examples_2misc_2iperf__server_2iperf__server_8c_source.html
  *----------------------------------------------------------------------------*/
 
