@@ -69,10 +69,8 @@ static void iperfsrv_sessmp_objinit(struct mempool_obj *obj, void *unused)
 static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err);
 static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb);
 static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-//static err_t iperfsrv_sent(void *argp, struct tcp_pcb *tpcb, u16_t len);
 static void reverse_connect(struct iperfsrv_sess *is, ip_addr_t *remote_ip);
 static void iperfsrv_error(void *argp, err_t err);
-//static void iperfsrv_send(struct iperfsrv_sess *sess);
 static err_t sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static struct iperfsrv *server = NULL; /* server instance */
 
@@ -229,7 +227,7 @@ static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb)
 static err_t connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
     struct iperfsrv_sess *is = (struct iperfsrv_sess *) arg;
-    //tcp_sent(tpcb, sent);
+
     sent(is, tpcb, 0);
     return ERR_OK;
 }
@@ -270,11 +268,8 @@ static void parse_header(struct iperfsrv_sess *is, struct tcp_pcb *tpcb, void *d
 }
 
 /*----------------------------------------------------------------------------
-
  * The following code is ported from:
-
  *  http://docs.lpcware.com/lpcopen/v1.03/lpc17xx__40xx_2examples_2misc_2iperf__server_2iperf__server_8c_source.html
-
  *----------------------------------------------------------------------------*/
 
 static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
@@ -364,139 +359,3 @@ static err_t sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 
     return ERR_OK;
 }
-
-#if 0
-
-static err_t iperfsrv_sent(void *argp, struct tcp_pcb *tpcb, u16_t len)
-
-{
-
-    struct iperfsrv_sess *sess = argp;
-
-    //LWIP_UNUSED_ARG(len);
-
-printf("iperfsrv_sent");
-
-    sess->retries = 0;
-
-    if(sess->p) {
-
-        /* still got pbufs to send */
-
-        //tcp_sent(tpcb, iperfsrv_sent);
-
-        iperfsrv_send(sess);
-
-    } else {
-
-        /* no more pbufs to send */
-
-        if(sess->state == ES_CLOSING) {
-
-            iperfsrv_close(sess);
-
-        }
-
-    }
-
-    return ERR_OK;
-
-}
-
-
-
-static void iperfsrv_send(struct iperfsrv_sess *sess)
-
-{
-
-    struct tcp_pcb *tpcb = sess->server_pcb;
-
-    struct pbuf *p;
-
-    err_t wr_err;
-
-    u16_t plen;
-
-    u8_t freed;
-
-
-
-printf("iperfsrv_send");
-
-    while ((sess->p) &&
-
-           (sess->p->len <= tcp_sndbuf(tpcb)))
-
-    {
-
-        p = sess->p;
-
-
-
-        /* enqueue data for transmission */
-
-        wr_err = tcp_write(tpcb, p->payload, p->len, TCP_WRITE_FLAG_COPY);
-
-        if (wr_err != ERR_OK) {
-
-            switch (wr_err) {
-
-            case ERR_MEM:
-
-                /* we are low on memory, try later / harder, defer to poll */
-
-                sess->p = p;
-
-                break;
-
-            default:
-
-                /* other problem ?? */
-
-                break;
-
-            }
-
-            return;
-
-        }
-
-        plen = p->len;
-
-
-
-        /* continue with next pbuf in chain (if any) */
-
-        sess->p = p->next;
-
-        if(sess->p) {
-
-            /* new reference! */
-
-            pbuf_ref(sess->p);
-
-        }
-
-
-
-        /* chop first pbuf from chain */
-
-        do {
-
-            /* try hard to free pbuf */
-
-            freed = pbuf_free(p);
-
-        } while (freed == 0);
-
-
-
-        /* we can read more data now */
-
-        tcp_recved(tpcb, plen);
-
-    }
-
-}
-
-#endif
