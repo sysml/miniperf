@@ -24,6 +24,7 @@
 #define SESSMP_NBOBJ 128
 #define IPERF_PORT 5001
 #define CONNECT_NOW 0x00000001
+#define IPERF_HEADER 0x80000000
 
 struct iperfsrv {
     struct tcp_pcb *tpcb;
@@ -49,7 +50,8 @@ enum iperfsrv_state
   ES_CLOSING
 };
 
-static unsigned long send_data[TCP_MSS / sizeof(unsigned long)];
+#define  DATA_SIZE 4096
+static unsigned long send_data[DATA_SIZE];
 
 struct iperfsrv_sess {
     struct mempool_obj *obj; /* reference to mempool object where
@@ -208,8 +210,9 @@ static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb)
 
     /* Server finished but client still has to run */
     if (tpcb != NULL && sess->server_pcb == tpcb) {
-        if (sess->client_pcb == NULL && !(sess->flags & CONNECT_NOW))
+        if (sess->client_pcb == NULL && !(sess->flags & CONNECT_NOW)) {
             reverse_connect(sess, &tpcb->remote_ip);
+	}
 
         /* unregister server callbacks */
         tcp_arg (sess->server_pcb, NULL);
@@ -246,7 +249,6 @@ static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb)
 static err_t connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
     struct iperfsrv_sess *is = (struct iperfsrv_sess *) arg;
-
     sent(is, tpcb, 0);
     return ERR_OK;
 }
@@ -365,18 +367,33 @@ static err_t sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 {
     struct iperfsrv_sess *is = (struct iperfsrv_sess *) arg;
 
-    is->sent_bytes += len;
+    err_t err;
+    size_t amount = sizeof(send_data);
+
+try_send:
 
     if (is->amount > 0 && is->sent_bytes > is->amount) {
         finish_send(is, tpcb);
         return ERR_OK;
     }
 
-    int space;
+    err = tcp_write(tpcb, send_data, amount, 0);
 
-    while ((space = tcp_sndbuf(tpcb)) >= sizeof(send_data)) {
-        tcp_write(tpcb, send_data, sizeof(send_data), 0);
+    if (unlikely(err == ERR_MEM)) {
+
+	if (amount > 1 && tcp_sndbuf(tpcb)) { /* if there is still space available   */
+	    amount >>= 1;                     /* divide amount of bytes to send by 2 */
+            goto try_send;                    /* and try again */
+	}
+	else
+	    goto out;
     }
 
+    if (likely(err == ERR_OK)) {
+	is->sent_bytes += amount;
+        goto try_send;
+    }
+
+out:
     return ERR_OK;
 }
