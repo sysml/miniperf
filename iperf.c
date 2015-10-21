@@ -19,6 +19,7 @@
 struct iperfsrv {
     struct tcp_pcb *tpcb;
     struct mempool *sessmp;
+
     uint32_t refcount;
 };
 
@@ -45,14 +46,17 @@ struct iperfsrv_sess {
     struct mempool_obj *obj; /* reference to mempool object where
                               * this struct is embedded in */
     struct iperfsrv *server;
-    struct tcp_pcb *server_pcb;
-    struct tcp_pcb *client_pcb;
+    struct tcp_pcb  *server_pcb;
+    struct tcp_pcb  *client_pcb;
+
     enum iperfsrv_state state;
-    uint8_t retries;
+
     int32_t flags;
-    uint8_t valid_hdr;
-    unsigned long sent_bytes;
     int32_t amount;
+    uint8_t retries;
+    uint8_t valid_hdr;
+
+    unsigned long sent_bytes;
 
     /* pbuf (chain) to recycle */
     struct pbuf *p;
@@ -67,17 +71,20 @@ static void iperfsrv_sessmp_objinit(struct mempool_obj *obj, void *unused)
 }
 
 static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err);
-static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb);
 static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
+static err_t sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
+
+static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb);
 static void reverse_connect(struct iperfsrv_sess *is, ip_addr_t *remote_ip);
 static void iperfsrv_error(void *argp, err_t err);
-static err_t sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
+
 static struct iperfsrv *server = NULL; /* server instance */
 
 int register_iperfsrv(void)
 {
     err_t err;
-    int ret = 0, i;
+    int i;
+    int ret = 0;
 
     ASSERT(server == NULL);
 
@@ -100,7 +107,7 @@ int register_iperfsrv(void)
     }
 
     server->refcount = 0;
-    server->tpcb = tcp_new();
+    server->tpcb     = tcp_new();
 
     if (!server->tpcb) {
         ret = -ENOMEM;
@@ -114,9 +121,9 @@ int register_iperfsrv(void)
         goto out_close_server;
     }
 
-    server->tpcb = tcp_listen(server->tpcb); /* transform it to a listener */
-    tcp_arg(server->tpcb, server); /* set callback argp */
-    tcp_accept(server->tpcb, iperfsrv_accept); /* set accept callback */
+    server->tpcb = tcp_listen(server->tpcb);   /* transform it to a listener */
+    tcp_arg(server->tpcb, server);             /* set callback argp          */
+    tcp_accept(server->tpcb, iperfsrv_accept); /* set accept callback        */
 
     printf("IPerf server started\n");
 
@@ -161,9 +168,10 @@ static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err)
         return ERR_MEM;
 
     sess = obj->data;
-    sess->retries = 0;
-    sess->server = server;
-    sess->state = ES_ACCEPTED;
+
+    sess->retries    = 0;
+    sess->server     = server;
+    sess->state      = ES_ACCEPTED;
     sess->server_pcb = new_tpcb;
 
     sess->client_pcb = NULL;
@@ -171,11 +179,12 @@ static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err)
     sess->sent_bytes = 0;
 
     /* register callbacks for this connection */
-    tcp_arg(new_tpcb, sess);
+    tcp_arg (new_tpcb, sess);
     tcp_recv(new_tpcb, iperfsrv_recv);
-    tcp_err(new_tpcb, iperfsrv_error);
+    tcp_err (new_tpcb, iperfsrv_error);
     tcp_sent(new_tpcb, sent);
     tcp_poll(new_tpcb, NULL, 0);
+
     tcp_setprio(new_tpcb, TCP_PRIO_MAX);
 
     server->refcount++;
@@ -194,9 +203,9 @@ static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb)
             reverse_connect(sess, &tpcb->remote_ip);
 
         /* unregister server callbacks */
-        tcp_arg(sess->server_pcb, NULL);
+        tcp_arg (sess->server_pcb, NULL);
         tcp_recv(sess->server_pcb, NULL);
-        tcp_err(sess->server_pcb, NULL);
+        tcp_err (sess->server_pcb, NULL);
         tcp_sent(sess->server_pcb, NULL);
         tcp_poll(sess->server_pcb, NULL, 0);
 
@@ -209,11 +218,12 @@ static void iperfsrv_close(struct iperfsrv_sess *sess, struct tcp_pcb *tpcb)
     if (sess->client_pcb == tpcb && tpcb != NULL) {
 
         /* unregister client callbacks */
-        tcp_arg(sess->client_pcb, NULL);
+        tcp_arg (sess->client_pcb, NULL);
         tcp_recv(sess->client_pcb, NULL);
-        tcp_err(sess->client_pcb, NULL);
+        tcp_err (sess->client_pcb, NULL);
         tcp_sent(sess->client_pcb, NULL);
         tcp_poll(sess->client_pcb, NULL, 0);
+
         sess->client_pcb = NULL;
     }
 
@@ -245,11 +255,12 @@ static void reverse_connect(struct iperfsrv_sess *is, ip_addr_t *remote_ip)
     is->client_pcb = tcp_new();
 
     if (is->client_pcb != NULL) {
-        tcp_arg(is->client_pcb, is);
-        tcp_err(is->client_pcb, connect_error);
+        tcp_arg (is->client_pcb, is);
+        tcp_err (is->client_pcb, connect_error);
         tcp_recv(is->client_pcb, iperfsrv_recv);
         tcp_sent(is->client_pcb, sent);
         tcp_poll(is->client_pcb, NULL, 0);
+
         tcp_connect(is->client_pcb, remote_ip, IPERF_PORT,
                     connected);
     }
@@ -259,8 +270,9 @@ static void parse_header(struct iperfsrv_sess *is, struct tcp_pcb *tpcb, void *d
 {
     struct client_hdr *chdr = (struct client_hdr *) data;
 
-    is->flags = ntohl(chdr->flags);
+    is->flags  = ntohl(chdr->flags);
     is->amount = ntohl(chdr->mAmount);
+
     is->valid_hdr = 1;
 
     if (is->flags & CONNECT_NOW)
