@@ -22,9 +22,17 @@
 #include "iperf.h"
 
 #define SESSMP_NBOBJ 128
+
 #define IPERF_PORT 5001
-#define CONNECT_NOW 0x00000001
+#define CONNECT_NOW  0x00000001
 #define IPERF_HEADER 0x80000000
+
+#define MANUALLY_DEFINED_AMOUNT
+
+#ifdef MANUALLY_DEFINED_AMOUNT
+/* Amount of bytes to send during test*/
+#define AMOUNT 107374182400
+#endif
 
 struct iperfsrv {
     struct tcp_pcb *tpcb;
@@ -50,7 +58,7 @@ enum iperfsrv_state
   ES_CLOSING
 };
 
-#define  DATA_SIZE 4096
+#define DATA_SIZE 4096
 static unsigned long send_data[DATA_SIZE];
 
 struct iperfsrv_sess {
@@ -63,7 +71,11 @@ struct iperfsrv_sess {
     enum iperfsrv_state state;
 
     int32_t flags;
+#ifdef MANUALLY_DEFINED_AMOUNT
+    uint64_t amount;
+#else
     int32_t amount;
+#endif
     uint8_t retries;
     uint8_t valid_hdr;
 
@@ -282,7 +294,12 @@ static void parse_header(struct iperfsrv_sess *is, struct tcp_pcb *tpcb, void *d
     struct client_hdr *chdr = (struct client_hdr *) data;
 
     is->flags  = ntohl(chdr->flags);
+
+#ifdef MANUALLY_DEFINED_AMOUNT
+    is->amount = AMOUNT;
+#else
     is->amount = ntohl(chdr->mAmount);
+#endif
 
     is->valid_hdr = 1;
 
