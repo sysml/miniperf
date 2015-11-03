@@ -5,7 +5,7 @@
  * Copyright(C) 2013 NEC Laboratories Europe. All rights reserved.
  *                   Simon Kuenzer <simon.kuenzer@neclab.eu>
  */
-#include <target/sys.h>
+#include "sys.h"
 #include <errno.h>
 #include <mempool.h>
 

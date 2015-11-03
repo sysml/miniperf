@@ -67,7 +67,6 @@
  */
 /* Note: This implementation is thread-safe but not SMP-safe. */
 
-#include <target/sys.h>
 #include <errno.h>
 #include <ring.h>
 

@@ -70,7 +70,7 @@
 #ifndef _RING_H_
 #define _RING_H_
 
-#include <target/sys.h>
+#include "sys.h"
 
 #include <stdint.h>
 #include <errno.h>

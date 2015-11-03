@@ -3,17 +3,23 @@ default : all
 ######################################
 ## user defined
 ######################################
-XEN_VER		?= 4.4.0
+XEN_VER		?= 4.4.2
 GCC_VERSION	?= 4.9.0
 verbose		?=
 stubdom		 = y
 
-MINICACHE_ROOT  ?= $(realpath ../minicache)
+ARCH = x86_64
+
+XEN_TARGET_ARCH		?= $(ARCH)
+XEN_COMPILE_ARCH	?= $(ARCH)
+XEN_ROOT		?= $(realpath ../xen)
+TOOLCHAIN_ROOT		?= $(realpath ../toolchain)
+MINIOS_ROOT		?= $(realpath ../mini-os)
+NEWLIB_ROOT             ?= $(TOOLCHAIN_ROOT)/$(ARCH)-root/x86_64-xen-elf
+LWIP_ROOT               ?= $(TOOLCHAIN_ROOT)/$(ARCH)-root/x86_64-xen-elf
+
 CFLAGS          += -Winline -Wtype-limits -Wcast-align -DDEBUG_SHELL
 CFLAGS          += -isystem $(realpath .)
-
-CFLAGS          += -isystem $(MINICACHE_ROOT)
-CFLAGS          += -isystem $(MINICACHE_ROOT)/target/minios/include
 
 CFLAGS	       			+= -DLWIP_WND_SCALE=1
 CFLAGS	       			+= -DLWIP_STATS_DISPLAY=1
