@@ -85,6 +85,8 @@ static struct _args {
 	    struct eth_addr mac;
     } sarp_entry[MAX_NB_STATIC_ARP_ENTRIES];
     unsigned int    nb_sarp_entries;
+
+    unsigned int    debug_msec;
 } args;
 
 static int parse_args_setval_cut(char delimiter, char **out_presnip, char **out_postsnip,
@@ -175,12 +177,20 @@ static int parse_args_setval_hwaddr(struct eth_addr *out, const char *buf)
 	return 0;
 }
 
+static int parse_args_setval_int(int *out, const char *buf)
+{
+	if (sscanf(buf, "%d", out) != 1)
+		return -1;
+	return 0;
+}
+
 static int parse_args(int argc, char *argv[])
 {
     char *presnip;
     char *postsnip;
     int opt;
     int ret;
+    int ival;
 
     /* default arguments */
     memset(&args, 0, sizeof(args));
@@ -189,8 +199,9 @@ static int parse_args(int argc, char *argv[])
     IP4_ADDR(&args.gw,     0,   0,   0,   0);
     args.dhclient = 1; /* dhcp as default */
     args.nb_sarp_entries = 0;
+    args.debug_msec = 0;
 
-    while ((opt = getopt(argc, argv, "i:g:a:")) != -1) {
+    while ((opt = getopt(argc, argv, "i:g:a:d:")) != -1) {
          switch(opt) {
          case 'i': /* IP address/mask */
 	      ret = parse_args_setval_ipv4cidr(&args.ip, &args.mask, optarg);
@@ -239,6 +250,15 @@ static int parse_args(int argc, char *argv[])
 	      free(presnip);
 	      args.nb_sarp_entries++;
               break;
+         case 'd': /* debug interval */
+	      ret = parse_args_setval_int(&ival, optarg);
+	      if (ret < 0 || ival < 0) {
+	           printk("invalid debug output interval specified\n");
+	           return -1;
+              }
+	      args.debug_msec = ival * 1000;
+              break;
+
          default:
 	      return -1;
          }
@@ -285,6 +305,12 @@ static inline void print_ani(void)
 	fflush(stdout);
 }
 
+static inline void print_debug(void)
+{
+	printf("D");
+	fflush(stdout);
+}
+
 int main(int argc, char *argv[])
 {
     struct netif netif;
@@ -297,6 +323,7 @@ int main(int argc, char *argv[])
     uint64_t ts_till;
     uint64_t ts_to;
     uint64_t ts_ani = 0;
+    uint64_t ts_debug = 0;
 #ifdef CONFIG_LWIP_NOTHREADS
     uint64_t ts_tcp = 0;
     uint64_t ts_etharp = 0;
@@ -443,6 +470,8 @@ int main(int argc, char *argv[])
         }
 #endif /* CONFIG_LWIP_NOTHREADS */
         TIMED(ts_now, ts_till, ts_ani,  ANI_INTERVAL_MSEC, print_ani());
+	if (unlikely(args.debug_msec))
+	  TIMED(ts_now, ts_till, ts_debug,  args.debug_msec, print_debug());
         ts_to = ts_till - ts_now;
 
         if (unlikely(shall_suspend)) {
