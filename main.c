@@ -27,7 +27,7 @@
 #include "iperf.h"
 
 #define MAX_NB_STATIC_ARP_ENTRIES 6
-#define ANI_INTERVAL_MSEC 1000
+#define ANI_INTERVAL_MSEC 5000
 
 #ifndef min
 #define min(a, b) \
@@ -307,8 +307,11 @@ static inline void print_ani(void)
 
 static inline void print_debug(void)
 {
-	printf("D");
-	fflush(stdout);
+	printk("\n---------------------------------------------------------");
+#if LWIP_STATS_DISPLAY
+	stats_display();
+#endif
+	printk("\n---------------------------------------------------------\n");
 }
 
 int main(int argc, char *argv[])
