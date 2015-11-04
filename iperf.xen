@@ -5,4 +5,4 @@ memory		= '128'
 vif		= ['mac=00:15:17:15:5d:74,bridge=xenbrm']
 name		= 'iperf'
 on_crash	= 'preserve'
-extra		= ''
+extra		= '-i 10.100.0.3/24'
