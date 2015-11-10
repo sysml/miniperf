@@ -7,6 +7,7 @@ XEN_VER		?= 4.4.2
 GCC_VERSION	?= 4.9.0
 verbose		?=
 stubdom		 = y
+debug		?= y
 
 ARCH = x86_64
 
@@ -21,11 +22,7 @@ LWIP_ROOT               ?= $(TOOLCHAIN_ROOT)/$(ARCH)-root/x86_64-xen-elf
 CFLAGS          += -Winline -Wtype-limits -Wcast-align -DDEBUG_SHELL
 CFLAGS          += -isystem $(realpath .)
 
-CFLAGS	       			+= -DLWIP_WND_SCALE=1
 CFLAGS	       			+= -DLWIP_STATS_DISPLAY=1
-#CFLAGS				+= -DLWIP_IF_DEBUG
-#CFLAGS				+= -DLWIP_TCP_DEBUG
-#CFLAGS				+= -DLWIP_POOL_DEBUG
 
 CONFIG_SELECT_POLL		= y
 
