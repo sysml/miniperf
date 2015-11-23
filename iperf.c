@@ -269,7 +269,7 @@ static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close ty
     sess->tpcb = NULL;
 
     /* unregister session */
-    sess->server->refcount--;   
+    sess->server->refcount--;
     mempool_put(sess->obj);
 
     return err;
