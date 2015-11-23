@@ -53,25 +53,25 @@ struct iperf_cmd_hdr {
 
 enum iperf_sess_close
 {
-  ISC_CLOSE = 0,
-  ISC_ABORT,
-  ISC_KILL,
+    ISC_CLOSE = 0,
+    ISC_ABORT,
+    ISC_KILL,
 };
 
 enum iperfsrv_state
 {
-  ES_NONE = 0,
-  ES_CONNECTED,
-  ES_CONNECTING,
-  ES_RECEIVED,
-  ES_CLOSING
+    ES_NONE = 0,
+    ES_CONNECTED,
+    ES_CONNECTING,
+    ES_RECEIVED,
+    ES_CLOSING
 };
 
 enum iperfsrv_type
 {
-  IT_UNINITIALIZED = 0,
-  IT_RECEIVER,
-  IT_SENDER
+    IT_UNINITIALIZED = 0,
+    IT_RECEIVER,
+    IT_SENDER
 };
 
 #define DATA_SIZE 4096
@@ -107,18 +107,18 @@ static void iperfsrv_sessmp_objinit(struct mempool_obj *obj, void *unused)
     struct iperfsrv_sess *sess = obj->data;
     LWIP_UNUSED_ARG(unused);
 
-    sess->obj = obj;
-    sess->tpcb = NULL;
-    sess->type = IT_UNINITIALIZED;
+    sess->obj   = obj;
+    sess->tpcb  = NULL;
+    sess->type  = IT_UNINITIALIZED;
     sess->state = ES_NONE;
 }
 
 static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err);
 static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-static void iperfsrv_error(void *argp, err_t err);
+static void  iperfsrv_error(void *argp, err_t err);
 static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close type);
 static err_t iperfsrv_sender_connected(void *arg, struct tcp_pcb *tpcb, err_t err);
-static void iperfsrv_sender_connect_err(void *arg, err_t err);
+static void  iperfsrv_sender_connect_err(void *arg, err_t err);
 static err_t iperfsrv_sender_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 
 static struct iperfsrv *server = NULL; /* server instance */
@@ -255,16 +255,16 @@ static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close ty
     /* terminate connection */
     switch (type) {
     case ISC_CLOSE:
-      err = tcp_close(sess->tpcb);
-      if (likely(err == ERR_OK))
-	break;
+        err = tcp_close(sess->tpcb);
+        if (likely(err == ERR_OK))
+	        break;
     case ISC_ABORT:
-      tcp_abort(sess->tpcb);
-      err = ERR_ABRT; /* lwip callback functions need to be notified */
-      break;
+        tcp_abort(sess->tpcb);
+        err = ERR_ABRT; /* lwip callback functions need to be notified */
+        break;
     default: /* ISC_KILL */
-      err = ERR_OK;
-      break;
+        err = ERR_OK;
+        break;
     }
     sess->tpcb = NULL;
 
@@ -313,16 +313,16 @@ static err_t iperfsrv_sender_connect(struct iperfsrv *server, const struct iperf
 
     obj = mempool_pick(server->sessmp);
     if (!obj) {
-      err = ERR_MEM;
-      goto err_out;
+        err = ERR_MEM;
+        goto err_out;
     }
 
     sess = obj->data;
 
     sess->tpcb       = tcp_new();
     if (!sess->tpcb) {
-      err = ERR_MEM;
-      goto err_freeobj;
+        err = ERR_MEM;
+        goto err_freeobj;
     }
 
     sess->retries    = 0;
@@ -353,7 +353,7 @@ static err_t iperfsrv_sender_connect(struct iperfsrv *server, const struct iperf
 
     err = tcp_connect(sess->tpcb, rip, rport, iperfsrv_sender_connected);
     if (err != ERR_OK)
-      goto err_close_tpcb;
+        goto err_close_tpcb;
     return ERR_OK;
 
  err_close_tpcb:
@@ -373,11 +373,11 @@ static inline err_t iperfsrv_command(struct iperfsrv_sess *sess, struct pbuf *p)
     struct iperf_cmd_hdr *chdr;
 
     if (p->len >= IPERF_CMD_HDRLEN) {
-      chdr = (struct iperf_cmd_hdr *) p->payload;
-      if ((chdr->flags & htonl(ICMD_HEADER)) && (chdr->flags & htonl(ICMD_CONNECT_NOW))) {
-	//printk("[%3u] Received connect command from client\n", sess->id);
-	return iperfsrv_sender_connect(sess->server, chdr, &sess->tpcb->remote_ip, IPERF_PORT);
-      }
+        chdr = (struct iperf_cmd_hdr *) p->payload;
+        if ((chdr->flags & htonl(ICMD_HEADER)) && (chdr->flags & htonl(ICMD_CONNECT_NOW))) {
+            //printk("[%3u] Received connect command from client\n", sess->id);
+            return iperfsrv_sender_connect(sess->server, chdr, &sess->tpcb->remote_ip, IPERF_PORT);
+        }
     }
     return ERR_OK;
 }
@@ -406,9 +406,9 @@ static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err
 
     if (unlikely(sess->recvhdr)) {
         ret_err = iperfsrv_command(sess, p);
-	if (unlikely(ret_err != ERR_OK))
-	    printk("[%3u] Failed to execute command from client: %d\n", sess->id, err);
-	sess->recvhdr = 0;
+	    if (unlikely(ret_err != ERR_OK))
+	        printk("[%3u] Failed to execute command from client: %d\n", sess->id, err);
+	    sess->recvhdr = 0;
     }
 
     ret_err = ERR_OK;
@@ -470,16 +470,16 @@ try_send:
     err = tcp_write(tpcb, send_data, amount, 0);
 
     if (unlikely(err == ERR_MEM)) {
-	if (amount > 1 && tcp_sndbuf(tpcb)) { /* if there is still space available   */
-	    amount >>= 1;                     /* divide amount of bytes to send by 2 */
+        if (amount > 1 && tcp_sndbuf(tpcb)) { /* if there is still space available   */
+            amount >>= 1;                     /* divide amount of bytes to send by 2 */
             goto try_send;                    /* and try again */
-	}
-	else
-	    goto out;
+        }
+        else
+            goto out;
     }
 
     if (likely(err == ERR_OK)) {
-	sess->sent_bytes += amount;
+        sess->sent_bytes += amount;
         goto try_send;
     }
 
