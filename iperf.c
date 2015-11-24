@@ -93,6 +93,7 @@ struct iperfsrv_sess {
 #endif
     uint8_t retries;
 
+    /* for connecting to client after finish receiving */
     uint8_t connect_after;
     struct iperf_cmd_hdr chdr;
 
@@ -393,13 +394,14 @@ static inline err_t iperfsrv_command(struct iperfsrv_sess *sess, struct pbuf *p)
                 return iperfsrv_sender_connect(sess->server, chdr, &sess->tpcb->remote_ip, IPERF_PORT);
             }
             else { /*connect only after receiving*/
-                sess->connect_after = 1;
-                sess->chdr.flags = chdr->flags;
+                sess->connect_after   = 1;
+
+                sess->chdr.flags      = chdr->flags;
                 sess->chdr.numThreads = chdr->numThreads;
-                sess->chdr.mPort = chdr->mPort;
-                sess->chdr.bufferlen = chdr->bufferlen;
-                sess->chdr.mWinBand = chdr->mWinBand;
-                sess->chdr.mAmount = chdr->mAmount;
+                sess->chdr.mPort      = chdr->mPort;
+                sess->chdr.bufferlen  = chdr->bufferlen;
+                sess->chdr.mWinBand   = chdr->mWinBand;
+                sess->chdr.mAmount    = chdr->mAmount;
             }
         }
     }
