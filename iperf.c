@@ -93,6 +93,9 @@ struct iperfsrv_sess {
 #endif
     uint8_t retries;
 
+    uint8_t connect_after;
+    struct iperf_cmd_hdr chdr;
+
     unsigned long sent_bytes;
 
     /* pbuf (chain) to recycle */
@@ -120,6 +123,7 @@ static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close ty
 static err_t iperfsrv_sender_connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 static void  iperfsrv_sender_connect_err(void *arg, err_t err);
 static err_t iperfsrv_sender_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
+static err_t iperfsrv_sender_connect(struct iperfsrv *server, const struct iperf_cmd_hdr *chdr, const ip_addr_t *rip, uint16_t rport);
 
 static struct iperfsrv *server = NULL; /* server instance */
 
@@ -217,6 +221,8 @@ static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err)
     sess->recvhdr    = 1; /* enable commands */
     sess->sent_bytes = 0;
 
+    sess->connect_after = 0;
+
     /* register callbacks for this connection */
     tcp_arg (sess->tpcb, sess);
     tcp_recv(sess->tpcb, iperfsrv_recv);
@@ -239,6 +245,12 @@ static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err)
 static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close type)
 {
     err_t err;
+
+    if (sess->connect_after) {
+        sess->connect_after = 0;
+        iperfsrv_sender_connect(sess->server, (const struct iperf_cmd_hdr *) &(sess->chdr), &sess->tpcb->remote_ip, IPERF_PORT);
+        return ERR_OK;
+    }
 
     printk("[%3u] Connection to %u.%u.%u.%u:%"PRIu16" closed\n", sess->id,
 	   ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
@@ -374,9 +386,21 @@ static inline err_t iperfsrv_command(struct iperfsrv_sess *sess, struct pbuf *p)
 
     if (p->len >= IPERF_CMD_HDRLEN) {
         chdr = (struct iperf_cmd_hdr *) p->payload;
-        if ((chdr->flags & htonl(ICMD_HEADER)) && (chdr->flags & htonl(ICMD_CONNECT_NOW))) {
-            //printk("[%3u] Received connect command from client\n", sess->id);
-            return iperfsrv_sender_connect(sess->server, chdr, &sess->tpcb->remote_ip, IPERF_PORT);
+
+        if (chdr->flags & htonl(ICMD_HEADER)) {
+            if ((chdr->flags & htonl(ICMD_CONNECT_NOW))) {
+                printk("[%3u] Received connect command from client\n", sess->id);
+                return iperfsrv_sender_connect(sess->server, chdr, &sess->tpcb->remote_ip, IPERF_PORT);
+            }
+            else { /*connect only after receiving*/
+                sess->connect_after = 1;
+                sess->chdr.flags = chdr->flags;
+                sess->chdr.numThreads = chdr->numThreads;
+                sess->chdr.mPort = chdr->mPort;
+                sess->chdr.bufferlen = chdr->bufferlen;
+                sess->chdr.mWinBand = chdr->mWinBand;
+                sess->chdr.mAmount = chdr->mAmount;
+            }
         }
     }
     return ERR_OK;

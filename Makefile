@@ -24,7 +24,7 @@ CFLAGS          += -isystem $(realpath .)
 
 CFLAGS	       			+= -DLWIP_STATS_DISPLAY=1
 
-CONFIG_SELECT_POLL		= y
+#CONFIG_SELECT_POLL		= y
 
 ## vif
 CONFIG_NETFRONT		 = y
