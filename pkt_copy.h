@@ -10,7 +10,7 @@ pkt_copy16(const void *_src, void *_dst, int l)
 {
 	const uint64_t *src = (uint64_t *) _src;
 	uint64_t *dst = (uint64_t *) _dst;
-#ifndef likely    
+#ifndef likely
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)       __builtin_expect(!!(x), 0)
 #endif
@@ -26,7 +26,7 @@ pkt_copy32(const void *_src, void *_dst, int l)
 {
 	const uint64_t *src = (uint64_t *) _src;
 	uint64_t *dst = (uint64_t *) _dst;
-#ifndef likely    
+#ifndef likely
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)       __builtin_expect(!!(x), 0)
 #endif
@@ -44,7 +44,7 @@ pkt_copy64(const void *_src, void *_dst, int l)
 {
 	const uint64_t *src = (uint64_t *) _src;
 	uint64_t *dst = (uint64_t *) _dst;
-#ifndef likely    
+#ifndef likely
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)       __builtin_expect(!!(x), 0)
 #endif
@@ -68,11 +68,11 @@ sse2_pkt_copy(const void *_src, void* _dst)
 {
     __m128 *dst = (__m128*) _dst;
     const __m128 *src = (__m128*) _src;
-    
-    *dst++ = *src++; 
-    *dst++ = *src++; 
-    *dst++ = *src++; 
-    *dst++ = *src++; 
+
+    *dst++ = *src++;
+    *dst++ = *src++;
+    *dst++ = *src++;
+    *dst++ = *src++;
 }
 
 #define pkt_copy(src, dst, l) pkt_copy64(src, dst, l)
