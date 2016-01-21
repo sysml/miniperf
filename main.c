@@ -7,7 +7,6 @@
 #include <getopt.h>
 #include <kernel.h>
 #include <sched.h>
-#include <pkt_copy.h>
 #include <mempool.h>
 
 #include <lwip/ip4_addr.h>
