@@ -74,8 +74,8 @@ enum iperfsrv_type
     IT_SENDER
 };
 
-#define DATA_SIZE 4096
-static unsigned long send_data[DATA_SIZE];
+#define DATA_SIZE 61440
+static char send_data[DATA_SIZE];
 
 struct iperfsrv_sess {
     struct mempool_obj *obj; /* reference to mempool object where
