@@ -236,9 +236,9 @@ static err_t iperfsrv_accept(void *argp, struct tcp_pcb *new_tpcb, err_t err)
     sess->id = server->refcount;
 
     printk("[%3u] Connection from %u.%u.%u.%u:%"PRIu16"\n", sess->id,
-	   ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
-	   ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
-	   sess->tpcb->remote_port);
+       ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
+       ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
+       sess->tpcb->remote_port);
 
     return ERR_OK;
 }
@@ -254,9 +254,9 @@ static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close ty
     }
 
     printk("[%3u] Connection to %u.%u.%u.%u:%"PRIu16" closed\n", sess->id,
-	   ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
-	   ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
-	   sess->tpcb->remote_port);
+       ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
+       ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
+       sess->tpcb->remote_port);
 
     /* disable this session */
     tcp_arg (sess->tpcb, NULL);
@@ -270,7 +270,7 @@ static err_t iperfsrv_close(struct iperfsrv_sess *sess, enum iperf_sess_close ty
     case ISC_CLOSE:
         err = tcp_close(sess->tpcb);
         if (likely(err == ERR_OK))
-	        break;
+            break;
     case ISC_ABORT:
         tcp_abort(sess->tpcb);
         err = ERR_ABRT; /* lwip callback functions need to be notified */
@@ -296,9 +296,9 @@ static err_t iperfsrv_sender_connected(void *arg, struct tcp_pcb *tpcb, err_t er
     sess->state = ES_CONNECTED;
 
     printk("[%3u] Connected to %u.%u.%u.%u:%"PRIu16"\n", sess->id,
-	   ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
-	   ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
-	   sess->tpcb->remote_port);
+       ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
+       ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
+       sess->tpcb->remote_port);
 
     /* start sending chain */
     return iperfsrv_sender_sent(sess, sess->tpcb, 0);
@@ -310,9 +310,9 @@ static void iperfsrv_sender_connect_err(void *arg, err_t err)
     BUG_ON(sess->type != IT_SENDER);
 
     printk("[%3u] Connection to %u.%u.%u.%u:%"PRIu16" failed: %d\n", sess->id,
-	   ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
-	   ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
-	   sess->tpcb->remote_port, err);
+       ip4_addr1(&sess->tpcb->remote_ip), ip4_addr2(&sess->tpcb->remote_ip),
+       ip4_addr3(&sess->tpcb->remote_ip), ip4_addr4(&sess->tpcb->remote_ip),
+       sess->tpcb->remote_port, err);
 
     /* close connection */
     iperfsrv_close(sess, ISC_ABORT);
@@ -349,8 +349,6 @@ static err_t iperfsrv_sender_connect(struct iperfsrv *server, const struct iperf
     sess->amount = AMOUNT;
 #else
     sess->amount = ntohl(chdr->mAmount);
-    //sess->amount *= TICK_FREQ;
-    //sess->amount /= 100;
 #endif
 
     /* register callbacks for this connection */
@@ -376,8 +374,8 @@ static err_t iperfsrv_sender_connect(struct iperfsrv *server, const struct iperf
     mempool_put(obj);
  err_out:
     printk("[%3u] Failed to connect to %u.%u.%u.%u:%"PRIu16": %d\n", server->refcount + 1,
-	   ip4_addr1(&rip), ip4_addr2(&rip), ip4_addr3(&rip), ip4_addr4(&rip),
-	   rport, err);
+       ip4_addr1(&rip), ip4_addr2(&rip), ip4_addr3(&rip), ip4_addr4(&rip),
+       rport, err);
     return err;
 }
 
@@ -432,9 +430,9 @@ static err_t iperfsrv_recv(void *argp, struct tcp_pcb *tpcb, struct pbuf *p, err
 
     if (unlikely(sess->recvhdr)) {
         ret_err = iperfsrv_command(sess, p);
-	    if (unlikely(ret_err != ERR_OK))
-	        printk("[%3u] Failed to execute command from client: %d\n", sess->id, err);
-	    sess->recvhdr = 0;
+        if (unlikely(ret_err != ERR_OK))
+            printk("[%3u] Failed to execute command from client: %d\n", sess->id, err);
+        sess->recvhdr = 0;
     }
 
     ret_err = ERR_OK;

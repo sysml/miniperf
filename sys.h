@@ -39,8 +39,8 @@ typedef struct semaphore sem_t;
   kernel_shutdown(SHUTDOWN_crash)
 
 #define target_init() \
-	do {} while(0)
+    do {} while(0)
 #define target_exit() \
-	do {} while(0)
+    do {} while(0)
 
 #endif /* _SYS_H_ */

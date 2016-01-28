@@ -1,8 +1,8 @@
-kernel		= './build/iperf_x86_64'
-vcpus		= '1'
-cpus		= '3'
-memory		= '128'
-vif		= ['mac=00:15:17:15:5d:74,bridge=xenbrm']
-name		= 'iperf'
-on_crash	= 'preserve'
-extra		= '-i 10.100.0.3/24'
+kernel      = './build/iperf_x86_64'
+vcpus       = '1'
+cpus        = '3'
+memory      = '128'
+vif         = ['mac=00:15:17:15:5d:74,bridge=xenbrm']
+name        = 'iperf'
+on_crash    = 'preserve'
+extra       = '-i 10.100.0.3/24'

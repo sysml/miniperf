@@ -102,7 +102,7 @@ static inline struct mempool_obj *mempool_pick(struct mempool *p)
   struct mempool_obj *obj;
   obj = ring_dequeue(p->free_objs);
   if (unlikely(!obj))
-	return NULL;
+    return NULL;
 
   /* initialize object size */
   obj->len = p->obj_size;
@@ -110,7 +110,7 @@ static inline struct mempool_obj *mempool_pick(struct mempool *p)
   obj->ltr = p->obj_tailroom;
   obj->data = (void *)((uintptr_t) obj + p->obj_data_offset);
   if (p->obj_init_func)
-	p->obj_init_func(obj, p->obj_init_func_argp);
+    p->obj_init_func(obj, p->obj_init_func_argp);
   return obj;
 }
 
@@ -122,16 +122,16 @@ static inline int mempool_pick_multiple(struct mempool *p, struct mempool_obj *o
   uint32_t i;
 
   if (unlikely(ring_dequeue_multiple(p->free_objs, (void **) objs, count) < 0))
-	return -1;
+    return -1;
 
   for (i=0; i<count; i++) {
-	/* initialize object size */
-	objs[i]->len = p->obj_size;
-	objs[i]->lhr = p->obj_headroom;
-	objs[i]->ltr = p->obj_tailroom;
-	objs[i]->data = (void *)((uintptr_t) objs[i] + p->obj_data_offset);
-	if (p->obj_init_func)
-	  p->obj_init_func(objs[i], p->obj_init_func_argp);
+    /* initialize object size */
+    objs[i]->len = p->obj_size;
+    objs[i]->lhr = p->obj_headroom;
+    objs[i]->ltr = p->obj_tailroom;
+    objs[i]->data = (void *)((uintptr_t) objs[i] + p->obj_data_offset);
+    if (p->obj_init_func)
+      p->obj_init_func(objs[i], p->obj_init_func_argp);
   }
   return 0;
 }
@@ -155,7 +155,7 @@ static inline void mempool_put(struct mempool_obj *obj)
 static inline void mempool_put_multiple(struct mempool_obj *objs[], uint32_t count)
 {
   if (likely(count > 0))
-	ring_enqueue_multiple(objs[0]->p_ref->free_objs, (void **) objs, count);
+    ring_enqueue_multiple(objs[0]->p_ref->free_objs, (void **) objs, count);
 }
 
 /*
@@ -183,8 +183,8 @@ static inline void mempool_obj_append_nocheck(struct mempool_obj *obj, ssize_t l
 static inline int mempool_obj_prepend(struct mempool_obj *obj, ssize_t len)
 {
   if (unlikely(len > obj->lhr || (len < 0 && (-len) > obj->len))) {
-	errno = ENOSPC;
-	return -1;
+    errno = ENOSPC;
+    return -1;
   }
   mempool_obj_prepend_nocheck(obj, len);
   return 0;
@@ -196,8 +196,8 @@ static inline int mempool_obj_prepend(struct mempool_obj *obj, ssize_t len)
 static inline int mempool_obj_append(struct mempool_obj *obj, ssize_t len)
 {
   if (unlikely(len > obj->ltr || (len < 0 && (-len) > obj->len))) {
-	errno = ENOSPC;
-	return -1;
+    errno = ENOSPC;
+    return -1;
   }
   mempool_obj_append_nocheck(obj, len);
   return 0;

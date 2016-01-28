@@ -26,8 +26,8 @@ static inline uint32_t log2(uint32_t v)
   uint32_t i = 0;
 
   while (v) {
-	v >>= 1;
-	i++;
+    v >>= 1;
+    i++;
   }
   return (i - 1);
 }
@@ -49,7 +49,7 @@ struct mempool *alloc_mempool(uint32_t nb_objs, size_t obj_size, size_t obj_data
   uint32_t i;
 
   if (obj_data_align)
-	ASSERT(POWER_OF_2(obj_data_align));
+    ASSERT(POWER_OF_2(obj_data_align));
 
   obj_private_len         = align_up(obj_private_len, MIN_ALIGN);
   struct_mempool_size     = align_up(sizeof(struct mempool), MIN_ALIGN);
@@ -75,8 +75,8 @@ struct mempool *alloc_mempool(uint32_t nb_objs, size_t obj_size, size_t obj_data
   /* allocate pool */
   p = target_malloc(max(PAGE_SIZE, obj_data_align), h_size + (o_size * nb_objs));
   if (!p) {
-	errno = ENOMEM;
-	goto error;
+    errno = ENOMEM;
+    goto error;
   }
 
   /* setup meta data */
@@ -92,19 +92,19 @@ struct mempool *alloc_mempool(uint32_t nb_objs, size_t obj_size, size_t obj_data
   /* initialize pool management */
   p->free_objs = alloc_ring(1 << (log2(nb_objs) + 1));
   if (!p->free_objs)
-	goto error_free_p;
+    goto error_free_p;
 
   /* initialize object skeletons and add them to pool management */
   o_offset = (uintptr_t) p + h_size;
   for (i = 0; i < nb_objs; i++) {
-	o_ptr           = (struct mempool_obj *) (o_offset + (i * o_size));
-	o_ptr->p_ref    = p;
-	if (obj_private_len)
-	  o_ptr->private = (void *)((uintptr_t) o_ptr + struct_mempool_obj_size);
-	else
-	  o_ptr->private = NULL;
+    o_ptr           = (struct mempool_obj *) (o_offset + (i * o_size));
+    o_ptr->p_ref    = p;
+    if (obj_private_len)
+      o_ptr->private = (void *)((uintptr_t) o_ptr + struct_mempool_obj_size);
+    else
+      o_ptr->private = NULL;
 
-	ring_enqueue(p->free_objs, o_ptr); /* never fails */
+    ring_enqueue(p->free_objs, o_ptr); /* never fails */
   }
 
 #ifdef MEMPOOL_DEBUG
@@ -116,27 +116,27 @@ struct mempool *alloc_mempool(uint32_t nb_objs, size_t obj_size, size_t obj_data
   printf("                      +--------------------+\n");
   printf(             "%018p -> |   struct mempool   | 0x%06llx\n", p, struct_mempool_size);
   if(h_size - struct_mempool_size)
-	printf("                      | / / / / / / / / / /| 0x%06llx\n", h_size - struct_mempool_size);
+    printf("                      | / / / / / / / / / /| 0x%06llx\n", h_size - struct_mempool_size);
 
   for (i = 0; i<nb_objs; i++){
-	o_ptr = (struct mempool_obj *)(o_offset + (i * o_size));
-	o_ptr->data = (void *)((uintptr_t) o_ptr + p->obj_data_offset);
-	printf("                      +--------------------+\n", o_ptr);
-	printf(             "%018p -> | struct mempool_obj | 0x%06llx\n", o_ptr, struct_mempool_obj_size);
-	if (p->obj_private_len)
-	  printf(             "%018p -> |    obj_private     | 0x%06llx\n", o_ptr->private, p->obj_private_len);
-	if (p->obj_headroom) {
-	  printf("                      |- - - - - - - - - - |\n");
-	  printf(             "%018p -> |      HEADROOM      | 0x%06llx\n", (void *)((uintptr_t) o_ptr->data - p->obj_headroom), p->obj_headroom);
-	}
-	printf("                      |- - - - - - - - - - |\n");
-	printf(             "%018p -> |       OBJECT       | 0x%06llx\n", o_ptr->data, p->obj_size);
-	if (p->obj_tailroom) {
-	  printf("                      |- - - - - - - - - - |\n");
-	  printf(             "%018p -> |      TAILROOM      | 0x%06llx\n", (void *)((uintptr_t) o_ptr->data + p->obj_size), p->obj_tailroom);
-	}
-	if (o_size - p->obj_tailroom - p->obj_size - p->obj_headroom - p->obj_private_len - struct_mempool_obj_size)
-	  printf("                      | / / / / / / / / / /| 0x%06llx\n", o_size - p->obj_tailroom - p->obj_size - p->obj_headroom - p->obj_private_len - struct_mempool_obj_size);
+    o_ptr = (struct mempool_obj *)(o_offset + (i * o_size));
+    o_ptr->data = (void *)((uintptr_t) o_ptr + p->obj_data_offset);
+    printf("                      +--------------------+\n", o_ptr);
+    printf(             "%018p -> | struct mempool_obj | 0x%06llx\n", o_ptr, struct_mempool_obj_size);
+    if (p->obj_private_len)
+      printf(             "%018p -> |    obj_private     | 0x%06llx\n", o_ptr->private, p->obj_private_len);
+    if (p->obj_headroom) {
+      printf("                      |- - - - - - - - - - |\n");
+      printf(             "%018p -> |      HEADROOM      | 0x%06llx\n", (void *)((uintptr_t) o_ptr->data - p->obj_headroom), p->obj_headroom);
+    }
+    printf("                      |- - - - - - - - - - |\n");
+    printf(             "%018p -> |       OBJECT       | 0x%06llx\n", o_ptr->data, p->obj_size);
+    if (p->obj_tailroom) {
+      printf("                      |- - - - - - - - - - |\n");
+      printf(             "%018p -> |      TAILROOM      | 0x%06llx\n", (void *)((uintptr_t) o_ptr->data + p->obj_size), p->obj_tailroom);
+    }
+    if (o_size - p->obj_tailroom - p->obj_size - p->obj_headroom - p->obj_private_len - struct_mempool_obj_size)
+      printf("                      | / / / / / / / / / /| 0x%06llx\n", o_size - p->obj_tailroom - p->obj_size - p->obj_headroom - p->obj_private_len - struct_mempool_obj_size);
   }
   printf("                      +--------------------+\n");
 #endif /* MEMPOOL_DEBUG */
@@ -152,8 +152,8 @@ struct mempool *alloc_mempool(uint32_t nb_objs, size_t obj_size, size_t obj_data
 void free_mempool(struct mempool *p)
 {
   if (p) {
-	BUG_ON(ring_count(p->free_objs) != p->nb_objs); /* some objects of this pool may be still in use */
-	free_ring(p->free_objs);
-	target_free(p);
+    BUG_ON(ring_count(p->free_objs) != p->nb_objs); /* some objects of this pool may be still in use */
+    free_ring(p->free_objs);
+    target_free(p);
   }
 }
