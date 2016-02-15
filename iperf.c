@@ -37,15 +37,17 @@
  *
  *     THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
-/**
- *
- * Code based partly on: https://github.com/lsgunth/lwip_contrib.git
+
+/*
+ * Small portions of this code were based on code found on:
+ * https://github.com/lsgunth/lwip_contrib.git
  * and
  * http://docs.lpcware.com/lpcopen/v1.03/lpc17xx__40xx_2examples_2misc_2iperf__server_2iperf__server_8c_source.html
  *
- * TODO: include external code license
+ * For those parts of code, both respective licenses apply.
+ * TODO: what is lpcware license? Allow distribution or changing the code?
  *
- * */
+ */
 
 #include <mini-os/os.h>
 #include <mini-os/types.h>
