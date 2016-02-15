@@ -65,6 +65,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 /* Note: This implementation is thread-safe but not SMP-safe. */
 
 #include <errno.h>
