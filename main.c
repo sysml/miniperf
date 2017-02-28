@@ -41,6 +41,7 @@
 #include <mini-os/os.h>
 #include <mini-os/types.h>
 #include <mini-os/xmalloc.h>
+#include <mini-os/lib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -318,17 +319,17 @@ static volatile int shall_suspend = 0;
 void app_shutdown(unsigned reason)
 {
     switch (reason) {
-    case TARGET_SHTDN_POWEROFF:
+    case SHUTDOWN_poweroff:
         printk("Poweroff requested\n");
         shall_reboot = 0;
         shall_exit = 1;
         break;
-    case TARGET_SHTDN_REBOOT:
+    case SHUTDOWN_reboot:
         printk("Reboot requested\n");
         shall_reboot = 1;
         shall_exit = 1;
         break;
-    case TARGET_SHTDN_SUSPEND:
+    case SHUTDOWN_suspend:
         printk("Suspend requested\n");
         shall_suspend = 1;
         break;
