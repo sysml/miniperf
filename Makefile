@@ -47,7 +47,7 @@ include Config.mk
 STUBDOM_NAME	= miniperf
 STUBDOM_ROOT	= $(realpath .)
 
-STUB_APP_OBJS0  = iperf.o main.o mempool.o
+STUB_APP_OBJS0  = miniperf.o iperf.o mempool.o
 STUB_APP_OBJS	= $(addprefix $(STUB_APP_OBJ_DIR)/,$(STUB_APP_OBJS0))
 
 include $(MINIOS_ROOT)/stub.mk
