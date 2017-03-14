@@ -49,8 +49,7 @@ CONFIG_LWIP_PARTIAL_CHECKSUM		?= $(CONFIG_NETFRONT_GSO)
 CONFIG_LWIP_GSO				?= n
 CONFIG_LWIP_BATCHTX			?= n
 CONFIG_LWIP_WND_SCALE			?= y
-CONFIG_LWIP_NUM_TCPCON			?= 512
-#CFLAGS					+= -DMEMP_NUM_PBUF=65535
+CONFIG_LWIP_NUM_TCPCON			?= 64
 
 ######################################
 ## debugging options
@@ -68,7 +67,7 @@ CONFIG_CONSFRONT_SYNC		= y
 STUBDOM_NAME	= iperf
 STUBDOM_ROOT	= $(realpath .)
 
-STUB_APP_OBJS0  = iperf.o main.o mempool.o ring.o
+STUB_APP_OBJS0  = iperf.o main.o mempool.o
 STUB_APP_OBJS	= $(addprefix $(STUB_APP_OBJ_DIR)/,$(STUB_APP_OBJS0))
 
 include $(MINIOS_ROOT)/stub.mk
