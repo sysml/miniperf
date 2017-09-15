@@ -45,11 +45,11 @@ After that, please ensure that you set the following environment variables set
 ### Download dependencies
 Our toolchain is required to comile and link the MinIperf VM binary:
 
-    git clone git@github.com:cnplab/toolchain.git
+    git clone  git://github.com/sysml/toolchain.git
 
 Also, Mini-OS, the base OS for MinIperf, is required:
 
-    git clone git@github.com:cnplab/mini-os.git
+    git clone  git://github.com/sysml/mini-os.git
 
 After that, please ensure that you set the following environment variables
 (I also recommend to add this to your shell profile):
@@ -70,7 +70,7 @@ In principle it should be:
 ### Download and Build MinIperf
 #### Clone the MinIperf repository
 
-    git clone git@github.com:cnplab/miniperf.git
+    git clone  git://github.com/sysml/miniperf.git
     cd miniperf
 
 #### Configure (optional)
